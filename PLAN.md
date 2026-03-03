@@ -35,8 +35,10 @@ Add Homebrew formula and CLI commands (`init`, `start`, `stop`) to manage cc-nim
 | 10 | Update `run.sh` to show deprecation notice and direct to `cc-nim`. | ✅ Completed | Deprecation note present |
 | 11 | Run full test suite (`uv run pytest`) and fix any failures. | ✅ Completed | 864 passed |
 | 12 | Run lint/type checks (`ruff format`, `ruff check`, `ty`). | ✅ Completed | All checks passing |
-| 13 | Commit changes on `feature/homebrew-setup` and push to fork. | ⏳ Pending | |
-| 14 | Create pull request to upstream repository. | ⏳ Pending | |
+| 13 | Commit changes and push to fork branch. | ✅ Completed | Pushed `codex/homebrew-stabilization` to `rainbow` |
+| 14 | Create pull request to upstream repository. | ⏸ Deferred | Explicitly skipped per user instruction (do not PR to origin) |
+| 15 | Revert fork-specific URLs/branches to upstream defaults before upstream PR (README testing snippet + `Formula/cc-proxy.rb` homepage/url/head). | ⏳ Pending | Required cleanup before opening PR to origin |
+| 16 | Fix broken `rainbow-365/tap` formula metadata and validate Homebrew install/test end-to-end. | ✅ Completed | `brew test rainbow-365/tap/cc-proxy` passing |
 
 ## Completed Code Changes
 - Added `import typer` to `cc_nim/cli.py`.
@@ -44,12 +46,19 @@ Add Homebrew formula and CLI commands (`init`, `start`, `stop`) to manage cc-nim
 - Added PID existence and liveness check in `start_command`.
 - Modified tests to expect `typer.Exit` and fixed stale PID mock to use `ProcessLookupError`.
 - Updated `tests/conftest.py` to use `AsyncMock` for async methods.
+- Hardened `Formula/cc-proxy.rb` for Homebrew compatibility:
+  - added explicit `version`
+  - switched install flow to `python -m pip --python=<venv> install` to ensure runtime deps (including `typer`) are installed
+  - made `post_install` deterministic with `CCPROXY_CONFIG=~/.ccenv` and safe no-op when config exists
+- Validated tap packaging behavior with clean install/test cycle:
+  - `brew install --build-from-source rainbow-365/tap/cc-proxy`
+  - `brew test rainbow-365/tap/cc-proxy` (pass)
+  - packaged `cc-nim` smoke checks (usage + `init` with temp config path)
 
 ## Next Steps
-1. Commit all completed Homebrew/CLI/test-fix changes on `feature/homebrew-setup`.
-2. Push branch to fork (`rainbow`) and open PR against upstream.
-3. Validate Homebrew install flow from tap in a clean environment.
-4. Update release/tag strategy for formula URL pinning.
+1. Keep fork-specific formula/README settings for branch testing; when preparing upstream PR, revert to upstream/origin URLs and default branch refs.
+2. Replace commit-pinned formula `url` with release tag strategy before external distribution.
+3. If upstream PR is needed later, open it only after user explicitly approves.
 
 ---
 *Last updated: 2026-03-03*

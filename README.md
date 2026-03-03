@@ -59,6 +59,15 @@ macOS/Linux users can install as a system service:
 brew install alishahryar1/tap/cc-proxy
 ```
 
+#### Testing from Fork
+
+If you want to test Homebrew packaging from your own fork/tap:
+
+```bash
+brew install --build-from-source \
+  https://raw.githubusercontent.com/rainbow-365/free-claude-code/codex/homebrew-stabilization/Formula/cc-proxy.rb
+```
+
 This installs the package and creates a default config at `~/.ccenv`. The `cc-proxy` service is set up but not started automatically. Start it with:
 
 ```bash
@@ -66,6 +75,7 @@ brew services start cc-proxy
 ```
 
 Configuration is edited in `~/.ccenv`. See [Configuration](#configuration) below.
+The package also installs the `cc-nim` CLI (`init`, `start`, `stop`).
 
 ### Clone & Configure
 
@@ -119,6 +129,7 @@ brew services start cc-proxy
 Or manually with the CLI:
 
 ```bash
+cc-nim init   # first time only; creates config at ~/.ccenv (or CCPROXY_CONFIG path)
 cc-nim start
 ```
 
@@ -409,6 +420,17 @@ See [`.env.example`](.env.example) for all supported parameters.
 
 Using `~/.ccenv` keeps your project directory clean and aligns with standard OS conventions.
 
+### `cc-nim` CLI Commands
+
+```bash
+cc-nim init    # Create config template (CCPROXY_CONFIG > ~/.ccenv > ./.env)
+cc-nim start   # Start the proxy server and write PID to ~/.cc-nim/cc-nim.pid
+cc-nim stop    # Stop brew service first (if available), else SIGTERM PID
+```
+
+`cc-nim init` refuses to overwrite an existing config file.
+Legacy `run.sh` is kept for backward compatibility and is deprecated in favor of `cc-nim start`.
+
 ---
 
 ## Development
@@ -417,6 +439,7 @@ Using `~/.ccenv` keeps your project directory clean and aligns with standard OS 
 
 ```
 free-claude-code/
+├── Formula/              # Homebrew formula (cc-proxy.rb)
 ├── server.py              # Entry point
 ├── api/                   # FastAPI routes, request detection, optimization handlers
 ├── providers/             # BaseProvider, OpenAICompatibleProvider, NIM, OpenRouter, LM Studio
